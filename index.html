@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Наша Годовщина ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Poppins:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Poppins',sans-serif;background:black;color:white;overflow-x:hidden;}
+section{min-height:100vh;display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px;}
+h1{font-family:'Playfair Display',serif;font-size:3rem;animation:fadeIn 2s ease forwards;}
+p{margin-top:20px;font-size:1.2rem;opacity:0;animation:fadeIn 3s ease forwards;animation-delay:1s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.video-bg{position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:-1;filter:brightness(0.5);}
+.timer{margin-top:20px;font-size:1.5rem;background:rgba(255,255,255,0.1);padding:10px 20px;border-radius:20px;backdrop-filter:blur(10px);}
+button{margin:10px;padding:10px 20px;border:none;border-radius:20px;background:#ff3366;color:white;cursor:pointer;font-size:1rem;}
+.glow{text-shadow:0 0 20px #ff3366;}
+
+.book-container{position:relative;width:300px;height:400px;margin-top:30px;overflow:hidden;}
+.page{width:100%;height:100%;background-size:cover;background-position:center;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.5);transition:opacity 0.5s ease;opacity:0;position:absolute;top:0;left:0;}
+.page.active{opacity:1;}
+
+.arrow{position:absolute;top:50%;transform:translateY(-50%);font-size:2rem;color:white;background:rgba(0,0,0,0.3);padding:10px;border-radius:50%;cursor:pointer;user-select:none;}
+.arrow-left{left:-50px;}
+.arrow-right{right:-50px;}
+
+.final-text{margin-top:20px;font-size:1.8rem;opacity:0;animation:fadeIn 3s ease forwards;animation-delay:1s;}
+
+.heart{position:fixed;color:red;font-size:20px;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<video class="video-bg" autoplay loop muted>
+    <source src="video.mp4" type="video/mp4">
+</video>
+
+<audio id="bgMusic" loop><source src="music.mp3" type="audio/mpeg"></audio>
+<audio id="voice"><source src="voice.m4a" type="audio/mpeg"></audio>
+
+<section>
+<h1 class="glow">Зяна, с нашей годовщиной ❤️</h1>
+<p>Ты — самое прекрасное в моей жизни</p>
+
+<div class="timer" id="timer"></div>
+
+<button id="musicBtn">Вкл/выкл музыку 🎵</button>
+<button id="voiceBtn">Признание 🎙</button>
+
+<div class="book-container">
+    <div id="book"></div>
+    <div class="arrow arrow-left" id="prev">&#10094;</div>
+    <div class="arrow arrow-right" id="next">&#10095;</div>
+</div>
+
+<div class="final-text" id="finalText">Ты — мой дом. Ты — мой покой. Ты — моя любовь.</div>
+</section>
+
+<script>
+// Таймер секунда в секунду от 26.02.2025 00:00
+const startDate = new Date("2025-02-26T00:00:00");
+const timerEl = document.getElementById("timer");
+function updateTimer(){
+    const now = new Date();
+    const diff = now - startDate;
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor(diff / (1000*60*60)) % 24;
+    const minutes = Math.floor(diff / (1000*60)) % 60;
+    const seconds = Math.floor(diff / 1000) % 60;
+    timerEl.textContent = `Мы вместе уже ${days}д ${hours}ч ${minutes}м ${seconds}с ❤️`;
+}
+setInterval(updateTimer,1000);
+updateTimer();
+
+// Музыка и голосовое управление
+const bgMusic=document.getElementById("bgMusic");
+const voice=document.getElementById("voice");
+document.getElementById("musicBtn").addEventListener("click",()=>{
+    bgMusic.paused?bgMusic.play():bgMusic.pause(); voice.pause();
+});
+document.getElementById("voiceBtn").addEventListener("click",()=>{
+    voice.paused?voice.play():voice.pause(); bgMusic.pause();
+});
+
+// Книга с фото
+const totalPages=30;
+let currentPage=0;
+const book=document.getElementById("book");
+for(let i=1;i<=totalPages;i++){
+    const page=document.createElement("div");
+    page.classList.add("page");
+    page.style.backgroundImage=`url('img/photo${i}.jpg')`;
+    book.appendChild(page);
+}
+const pages=document.querySelectorAll(".page");
+pages[currentPage].classList.add("active");
+
+function showPage(index){
+    pages.forEach(p=>p.classList.remove("active"));
+    pages[index].classList.add("active");
+}
+
+// Стрелки
+document.getElementById("prev").addEventListener("click",()=>{
+    currentPage=(currentPage>0)?currentPage-1:totalPages-1;
+    showPage(currentPage);
+});
+document.getElementById("next").addEventListener("click",()=>{
+    currentPage=(currentPage<totalPages-1)?currentPage+1:0;
+    showPage(currentPage);
+});
+
+// Свайп на телефоне
+let startX=0;
+book.addEventListener("touchstart",(e)=>startX=e.touches[0].clientX);
+book.addEventListener("touchend",(e)=>{
+    let endX=e.changedTouches[0].clientX;
+    if(endX-startX>50){currentPage=(currentPage>0)?currentPage-1:totalPages-1;}
+    if(startX-endX>50){currentPage=(currentPage<totalPages-1)?currentPage+1:0;}
+    showPage(currentPage);
+});
+
+// Автоперелистывание каждые 3 сек
+setInterval(()=>{
+    currentPage=(currentPage<totalPages-1)?currentPage+1:0;
+    showPage(currentPage);
+},3000);
+
+// Сердечки
+function createHeart(){
+    const heart=document.createElement("div");
+    heart.className="heart";
+    heart.innerHTML="❤️";
+    const size=Math.random()*25+15;
+    heart.style.fontSize=size+"px";
+    heart.style.left=Math.random()*100+"vw";
+    heart.style.color=`hsl(${Math.random()*360},70%,70%)`;
+    const animDuration=Math.random()*4+3;
+    heart.style.transition=`transform ${animDuration}s linear, opacity ${animDuration}s linear`;
+    document.body.appendChild(heart);
+    setTimeout(()=>{
+        heart.style.transform=`translateY(-120vh) rotate(${Math.random()*360}deg)`;
+        heart.style.opacity=0;
+    },50);
+    setTimeout(()=>heart.remove(),animDuration*1000);
+}
+setInterval(createHeart,300);
+
+// Появление финального текста
+window.addEventListener("load",()=>setTimeout(()=>{document.getElementById("finalText").style.opacity=1;},500));
+</script>
+
+</body>
+</html>
